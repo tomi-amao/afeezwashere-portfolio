@@ -56,7 +56,7 @@ function onClick() { if (!props.open && props.openTo) router.push(props.openTo) 
 .peek-hit { position: fixed; top: 0; right: 0; width: 4.5rem; height: 100vh; z-index: calc(var(--z-panel) + 1); cursor: pointer; }
 @media (max-width: 767px) {
   .panel { width: 100vw; }
-  .panel.peek { transform: translateX(calc(100% - 3rem)); }
+  .panel.peek:not(.open) { transform: translateX(calc(100% - 3rem)); }
   .peek-hit { width: 3rem; }
   .body { padding-left: 4.5rem; }
 }
