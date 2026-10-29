@@ -1,0 +1,31 @@
+:root {
+  --bg: #f7f5f2;
+  --fg: #141414;
+  --muted: #6b6b6b;
+  --accent: #ff4d2e;
+  --card: #e8e4de;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #111; --fg: #f2f2f2; --muted: #9a9a9a; --card: #1f1f1f; }
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg); color: var(--fg); line-height: 1.5;
+  max-width: 1100px; margin: 0 auto; padding: 0 16px;
+}
+a { color: inherit; }
+.site-header { display: flex; justify-content: space-between; align-items: center; padding: 24px 0; }
+.logo { font-weight: 700; text-decoration: none; font-size: 1.1rem; }
+.logo span { color: var(--accent); }
+nav a { margin-left: 20px; text-decoration: none; color: var(--muted); }
+nav a:hover { color: var(--fg); }
+section { padding: 64px 0; }
+.eyebrow { color: var(--accent); font-weight: 600; text-transform: uppercase; letter-spacing: .08em; font-size: .8rem; margin-bottom: 12px; }
+h1 { font-size: clamp(2rem, 6vw, 4rem); line-height: 1.1; letter-spacing: -0.02em; }
+h2 { font-size: 1.5rem; margin-bottom: 24px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 24px; }
+.thumb { aspect-ratio: 4 / 3; background: var(--card); border-radius: 12px; margin-bottom: 12px; transition: transform .2s; }
+.card:hover .thumb { transform: translateY(-4px); }
+.card p, .about p { color: var(--muted); }
+.site-footer { padding: 32px 0; color: var(--muted); font-size: .9rem; }
