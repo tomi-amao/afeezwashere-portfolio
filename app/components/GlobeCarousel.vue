@@ -38,7 +38,7 @@ function measure() {
   const mobile = vw < 768
   radius.value = mobile ? Math.min(vw * 0.4, vh * 0.3) : Math.min(vw * 0.25, vh * 0.34)
   cx.value = vw / 2
-  cy.value = mobile ? vh * 0.42 : vh * 0.46
+  cy.value = mobile ? vh * 0.44 : vh * 0.5
 }
 
 function frame(now: number) {

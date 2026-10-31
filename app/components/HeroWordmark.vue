@@ -14,9 +14,9 @@ defineProps<{ lines: string[] }>()
   position: fixed; left: 0; bottom: 0; z-index: var(--z-hero);
   padding: 0 0 var(--margin) var(--margin);
   color: #fff; mix-blend-mode: difference; pointer-events: none;
-  font-size: 7.2rem;
+  font-size: 3.6rem;
 }
 .line { display: block; overflow: hidden; padding-bottom: .04em; }
 .hero-line { display: block; }
-@media (max-width: 767px) { .hero { font-size: 2.8rem; } }
+@media (max-width: 767px) { .hero { font-size: 2rem; } }
 </style>
