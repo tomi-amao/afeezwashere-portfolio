@@ -2,9 +2,9 @@
      sphere turns on its axis. Drag to spin it (with inertia) and tilt it,
      scroll to spin, click a card to open its project. Cards are oriented with
      CSS 3D transforms; depth drives opacity and stacking so the far side reads
-     as the back of the globe. -->
+     as the back of the globe. With "reduce motion" on, it's a static grid. -->
 <script setup lang="ts">
-import { canvasOffset } from '~/utils/canvasLayout'
+import { projects } from '~/data/site'
 import type { GlobeItem } from '~/utils/globeLayout'
 
 const props = defineProps<{ items: GlobeItem[]; active: boolean }>()
@@ -26,6 +26,17 @@ let yaw = 0, pitch = TILT, vYaw = 0, vPitch = 0, spin = 1
 let dragging = false, moved = 0, lx = 0, ly = 0
 let last = 0, raf = 0, loaded = 0, readySent = false, released = 0
 let reduce = false
+const still = ref(false) // reduced motion: show the static grid instead
+const touch = ref(false)
+const workCount = projects.length
+
+function hover(it: GlobeItem | null, el?: EventTarget | null) {
+  hovered.value = it
+  const v = (el as HTMLElement | undefined)?.querySelector('video')
+  if (!v) return
+  if (it) v.play().catch(() => {})
+  else { v.pause(); v.currentTime = 0 }
+}
 
 // Card size: equal area-ish, so wide and tall stills feel the same weight
 function size(ratio: number) {
@@ -54,7 +65,6 @@ function frame(now: number) {
     if (now - released > 600) pitch += (TILT - pitch) * Math.min(1, dt * 1.5)
   }
   pitch = Math.max(-MAX_TILT, Math.min(MAX_TILT, pitch))
-  canvasOffset.x = yaw * 4; canvasOffset.y = yaw * 4
 
   const R = radius.value
   const sp = Math.sin(pitch * RAD), cp = Math.cos(pitch * RAD)
@@ -119,12 +129,14 @@ function sendReady() {
   emit('ready')
 }
 
-function start() { if (!raf) { last = 0; raf = requestAnimationFrame(frame) } }
+function start() { if (!raf && !still.value) { last = 0; raf = requestAnimationFrame(frame) } }
 function stop() { cancelAnimationFrame(raf); raf = 0 }
 watch(() => props.active, (a) => (a ? start() : stop()))
 
 onMounted(() => {
   reduce = matchMedia('(prefers-reduced-motion: reduce)').matches
+  touch.value = matchMedia('(hover: none)').matches
+  if (reduce) { still.value = true; sendReady(); return }
   measure()
   addEventListener('resize', measure)
   root.value!.addEventListener('wheel', wheel, { passive: false })
@@ -135,11 +147,18 @@ onMounted(() => {
   setTimeout(sendReady, 2500)
   if (props.active) start()
 })
-onBeforeUnmount(() => { stop(); removeEventListener('resize', measure) })
+onBeforeUnmount(() => { stop(); removeEventListener('resize', measure); root.value?.removeEventListener('wheel', wheel) })
 </script>
 
 <template>
+  <div v-if="still" class="still-grid" data-lenis-prevent>
+    <NuxtLink v-for="it in items" :key="it.id" :to="`/work/${it.slug}`" class="still-card">
+      <img :src="it.src" :alt="it.alt" loading="lazy" :style="{ aspectRatio: `1 / ${it.ratio}` }">
+      <span class="mono">{{ it.title }}</span>
+    </NuxtLink>
+  </div>
   <div
+    v-else
     ref="root"
     class="globe"
     data-lenis-prevent
@@ -163,16 +182,22 @@ onBeforeUnmount(() => { stop(); removeEventListener('resize', measure) })
         :aria-label="it.title"
         draggable="false"
         @click.prevent="(e: MouseEvent) => e.detail === 0 && navigateTo(`/work/${it.slug}`)"
-        @mouseenter="hovered = it"
-        @mouseleave="hovered = null"
+        @mouseenter="(e: MouseEvent) => hover(it, e.currentTarget)"
+        @mouseleave="(e: MouseEvent) => hover(null, e.currentTarget)"
       >
-        <img :src="it.src" alt="" class="fade-img" draggable="false" decoding="async" @load="onLoad">
+        <img :src="it.src" :alt="it.alt" class="fade-img" draggable="false" decoding="async" @load="onLoad">
+        <video v-if="it.loop" :src="it.loop" muted loop playsinline preload="none" aria-hidden="true" />
       </a>
     </div>
     <div ref="label" class="cursor-label mono" aria-hidden="true">
       <span v-if="hovered">{{ hovered.title }}<template v-if="hovered.year !== '—'"> — {{ hovered.year }}</template></span>
     </div>
   </div>
+  <p v-if="!still" class="hint mono" :style="{ top: cy + radius * 1.12 + 'px' }">
+    <span>{{ touch ? 'Swipe to spin' : 'Drag to spin' }}</span>
+    <span>{{ touch ? 'Tap to open' : 'Click to open' }}</span>
+    <NuxtLink to="/work" class="hover-fade">All work ({{ String(workCount).padStart(2, '0') }}) →</NuxtLink>
+  </p>
 </template>
 
 <style scoped>
@@ -184,14 +209,33 @@ onBeforeUnmount(() => { stop(); removeEventListener('resize', measure) })
 /* Zero-size point at the globe centre; its perspective is the camera */
 .stage { position: absolute; width: 0; height: 0; perspective-origin: 0 0; }
 .card {
-  position: absolute; top: 0; left: 0; display: block;
+  position: absolute; top: 0; left: 0; display: block; overflow: hidden;
   opacity: 0; will-change: transform, opacity; background: #f2f2f2;
 }
-.card img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+.card img, .card video { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+.card video { position: absolute; inset: 0; opacity: 0; transition: opacity var(--dur-normal) var(--ease-alpha); }
+.card:hover video { opacity: 1; }
+/* Desktop: bottom-right, opposite the wordmark. Mobile: just under the globe. */
+.hint {
+  position: fixed; right: calc(4.5rem + var(--margin)); bottom: calc(var(--strip-h) + var(--margin)); z-index: var(--z-hero);
+  display: flex; gap: 1.6rem; pointer-events: none;
+}
+@media (min-width: 768px) { .hint { top: auto !important; } }
+@media (max-width: 767px) { .hint { left: 0; right: 0; bottom: auto; justify-content: center; } }
+.hint span::after { content: '·'; margin-left: 1.6rem; }
+.hint a { pointer-events: auto; text-decoration: underline; text-underline-offset: .2em; }
+.still-grid {
+  position: fixed; inset: 0; z-index: var(--z-canvas); overflow-y: auto;
+  display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 1.6rem; align-items: start;
+  padding: 8rem calc(4.5rem + var(--margin)) 40vh var(--margin); background: #fff;
+}
+.still-card img { width: 100%; object-fit: cover; background: #f2f2f2; margin-bottom: .6rem; }
+@media (max-width: 767px) { .still-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .cursor-label {
   position: fixed; top: 0; left: 0; pointer-events: none; z-index: 5;
-  padding: 1.2rem 0 0 1.4rem; white-space: nowrap; color: #000;
+  padding: 1.4rem 0 0 1.6rem; white-space: nowrap; color: #000; font-size: 1.3rem;
 }
-.cursor-label span { background: #fff; padding: .2rem .4rem; }
+.cursor-label span { background: #fff; padding: .4rem .6rem; }
+.cursor-label span::after { content: ' — Open →'; color: var(--grey); }
 @media (hover: none) { .cursor-label { display: none; } }
 </style>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { projects, categories, img } from '~/data/site'
+import { projects, categories, img, altFor } from '~/data/site'
 
 const route = useRoute()
 const index = projects.findIndex((p) => p.slug === route.params.slug)
@@ -8,6 +8,9 @@ const p = projects[index]!
 const next = projects[(index + 1) % projects.length]!
 const cats = categories.filter((c) => p.categories.includes(c.slug)).map((c) => c.title)
 const playing = ref(false)
+// The signature tag: "Afeez was here — London, 2024"
+const stamp = `Afeez was here — ${[p.location, p.year !== '—' ? p.year : ''].filter(Boolean).join(', ')}`
+const details = [p.client !== p.title ? p.client : '', p.role, p.year !== '—' ? p.year : ''].filter(Boolean).join(' · ')
 const embed = computed(() => p.video?.provider === 'vimeo'
   ? `https://player.vimeo.com/video/${p.video.id}?autoplay=1&title=0&byline=0&portrait=0`
   : p.video ? `https://www.youtube-nocookie.com/embed/${p.video.id}?autoplay=1&rel=0` : '')
@@ -23,16 +26,15 @@ useSeoMeta({ title: `${p.title} — Afeez Was Here`, description: p.body[0], ogI
     <div class="player">
       <iframe v-if="playing && embed" :src="embed" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen :title="p.title" />
       <template v-else>
-        <img :src="img(p.cover)" :alt="p.title">
-        <button class="play label" type="button" :disabled="!embed" @click="playing = true">
-          {{ embed ? 'Play film' : 'Film coming soon' }}
-        </button>
+        <img :src="img(p.cover)" :alt="altFor(p, p.cover)">
+        <button v-if="embed" class="play label" type="button" @click="playing = true">Play film</button>
       </template>
     </div>
 
     <div class="grid-w head">
       <h1 class="title display">{{ p.title }}</h1>
-      <p class="meta grey">{{ [p.client, p.year !== '—' ? p.year : '', p.role].filter(Boolean).join(' · ') }}</p>
+      <p class="meta grey">{{ details }}</p>
+      <p class="stamp display">{{ stamp }}</p>
     </div>
 
     <div class="grid-w body">
@@ -53,7 +55,7 @@ useSeoMeta({ title: `${p.title} — Afeez Was Here`, description: p.body[0], ogI
     </div>
 
     <div class="grid-w stills">
-      <img v-for="s in p.stills" :key="s" :src="img(s)" alt="" loading="lazy">
+      <img v-for="s in p.stills" :key="s" :src="img(s)" :alt="altFor(p, s)" loading="lazy">
     </div>
 
     <NuxtLink :to="`/work/${next.slug}`" class="next display">
@@ -80,6 +82,11 @@ useSeoMeta({ title: `${p.title} — Afeez Was Here`, description: p.body[0], ogI
 .play:not(:disabled):hover { background: #fff; color: #000; }
 .play:disabled { cursor: default; opacity: .8; }
 .head { margin-top: 4rem; }
+.stamp {
+  grid-column: 1 / -1; justify-self: start; margin-top: 2.4rem;
+  border: 2px solid #000; padding: .6rem 1rem .5rem; font-size: 1.6rem; letter-spacing: 0; line-height: 1;
+  transform: rotate(-2deg);
+}
 .title { grid-column: 1 / span 16; font-size: 9rem; }
 .meta { grid-column: 1 / -1; font-size: 3rem; letter-spacing: -0.02em; font-weight: 500; margin-top: 1rem; }
 .body { margin-top: 5rem; row-gap: 3rem; }

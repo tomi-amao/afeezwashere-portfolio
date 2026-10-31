@@ -5,7 +5,7 @@ const contactTo = computed(() => ({ path: route.path, query: { ...route.query, c
 </script>
 
 <template>
-  <header class="header label">
+  <header class="header label" :class="{ solid: project }">
     <nav>
       <template v-if="project">
         <NuxtLink to="/work" class="hover-fade">← Back to work</NuxtLink>
@@ -22,10 +22,12 @@ const contactTo = computed(() => ({ path: route.path, query: { ...route.query, c
 
 <style scoped>
 .header {
-  position: fixed; top: 0; left: 0; right: 0; z-index: var(--z-header);
+  position: fixed; top: 0; left: 0; right: 0; z-index: calc(var(--z-panel) + 2);
   display: flex; justify-content: space-between; padding: var(--margin);
   color: #fff; mix-blend-mode: difference; pointer-events: none;
 }
 .header a { pointer-events: auto; }
 nav { display: flex; gap: 2.4rem; }
+/* Over a scrolling project page, a white bar keeps the menu off the body text */
+.header.solid { color: #000; mix-blend-mode: normal; background: #fff; border-bottom: 1px solid rgba(0, 0, 0, .08); }
 </style>

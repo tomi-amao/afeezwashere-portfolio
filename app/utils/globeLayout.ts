@@ -8,6 +8,8 @@ export interface GlobeItem {
   year: string
   src: string
   ratio: number // height / width
+  alt: string
+  loop?: string // muted mp4 played while hovered
   lat: number   // degrees, + is up
   lon: number   // degrees
 }

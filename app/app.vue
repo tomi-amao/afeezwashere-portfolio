@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import gsap from 'gsap'
-import { projects, site, img, PLACEHOLDER_RATIOS } from '~/data/site'
+import { projects, site, img, altFor, PLACEHOLDER_RATIOS } from '~/data/site'
 import { globeLayout } from '~/utils/globeLayout'
 
 const route = useRoute()
@@ -10,7 +10,8 @@ const router = useRouter()
 const globeItems = globeLayout(projects.flatMap((p) =>
   [p.cover, ...p.stills].map((n) => ({
     id: `${p.slug}-${n}`, slug: p.slug, title: p.title, year: p.year,
-    src: img(n), ratio: PLACEHOLDER_RATIOS[n]!,
+    src: img(n), ratio: PLACEHOLDER_RATIOS[n]!, alt: altFor(p, n),
+    loop: n === p.cover ? p.loop : undefined,
   })),
 ))
 
@@ -51,7 +52,8 @@ onBeforeUnmount(() => removeEventListener('keydown', onKey))
       <GhostType :active="!isProject" />
       <GlobeCarousel :items="globeItems" :active="!isProject" @ready="onReady" />
       <HeroWordmark :lines="site.heroLines" />
-      <SidePanel :open="workOpen" peek="W" open-to="/work" label="Work">
+      <ClientStrip />
+      <SidePanel :open="workOpen" peek="Work →" open-to="/work" label="Work">
         <WorkIndex :category="category" />
       </SidePanel>
       <SidePanel :open="aboutOpen" label="Who's Afeez?">
