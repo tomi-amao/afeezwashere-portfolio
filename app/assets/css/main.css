@@ -1,6 +1,7 @@
 /* Design tokens. 1rem scales with the window width, like General Admission. */
 :root {
   --margin: 1.6rem;
+  --strip-h: 3.2rem;
   --ease-alpha: cubic-bezier(.4, 0, .2, 1);
   --ease-panel: cubic-bezier(.76, 0, .24, 1);
   --dur-normal: 400ms;
@@ -51,6 +52,7 @@ html.lenis, html.lenis body { height: auto; }
 .hover-fade { transition: opacity var(--dur-normal) var(--ease-alpha); }
 .hover-fade:hover { opacity: .4; }
 .grey { color: var(--grey); }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 .fade-img { opacity: 0; transition: opacity var(--dur-slow) var(--ease-alpha); }
 .fade-img.is-loaded { opacity: 1; }

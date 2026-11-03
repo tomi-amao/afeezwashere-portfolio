@@ -1,6 +1,17 @@
 export default defineNuxtConfig({
   compatibilityDate: '2026-10-01',
   devtools: { enabled: false },
+  // Set SANITY_PROJECT_ID (and optionally SANITY_DATASET) in Vercel to read
+  // content from Sanity. Without it the site uses app/data/site.ts.
+  runtimeConfig: {
+    sanity: {
+      projectId: process.env.SANITY_PROJECT_ID || '',
+      dataset: process.env.SANITY_DATASET || 'production',
+    },
+  },
+  routeRules: {
+    '/studio/**': { headers: { 'x-robots-tag': 'noindex' } },
+  },
   css: ['~/assets/css/main.css'],
   app: {
     pageTransition: { name: 'fade', mode: 'out-in' },

@@ -1,17 +1,22 @@
 <script setup lang="ts">
 import gsap from 'gsap'
-import { projects, site, img, PLACEHOLDER_RATIOS } from '~/data/site'
-import { layout } from '~/utils/canvasLayout'
+import { globeLayout } from '~/utils/globeLayout'
 
+const { projects, site } = useContent()
 const route = useRoute()
 const router = useRouter()
 
-// Every image of every project becomes a tile on the home canvas
-const canvasItems = layout(projects.flatMap((p) =>
-  [p.cover, ...p.stills].map((n, i) => ({
-    id: `${p.slug}-${n}`, slug: p.slug, title: p.title, year: p.year,
-    src: img(n), ratio: PLACEHOLDER_RATIOS[n]!, canvasSize: p.canvasSizes[i] ?? 's',
-  })),
+// Every image of every project becomes a card on the home globe. Clips show
+// their poster and play on hover; clips without a poster stay off the globe.
+const globeItems = globeLayout(projects.flatMap((p) =>
+  [p.cover, ...p.stills]
+    .map((m, i) => ({ m, i }))
+    .filter(({ m, i }) => m.src && (i === 0 || m.onHome))
+    .map(({ m, i }) => ({
+      id: `${p.slug}-${i}`, slug: p.slug, title: p.title, year: p.year,
+      src: m.src, ratio: m.ratio, alt: m.alt,
+      loop: i === 0 ? p.loop : m.video,
+    })),
 ))
 
 const isProject = computed(() => route.name === 'work-slug')
@@ -49,9 +54,10 @@ onBeforeUnmount(() => removeEventListener('keydown', onKey))
   <div>
     <div v-show="!isProject">
       <GhostType :active="!isProject" />
-      <InfiniteCanvas :items="canvasItems" :active="!isProject" @ready="onReady" />
+      <GlobeCarousel :items="globeItems" :active="!isProject" @ready="onReady" />
       <HeroWordmark :lines="site.heroLines" />
-      <SidePanel :open="workOpen" peek="W" open-to="/work" label="Work">
+      <ClientStrip />
+      <SidePanel :open="workOpen" peek="Work →" open-to="/work" label="Work">
         <WorkIndex :category="category" />
       </SidePanel>
       <SidePanel :open="aboutOpen" label="Who's Afeez?">

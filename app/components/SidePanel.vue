@@ -1,4 +1,4 @@
-<!-- Slides in from the right. When `peek` (a letter) is set and the panel is closed it stays
+<!-- Slides in from the right. When `peek` (a short label) is set and the panel is closed it stays
      parked with a sliver showing, like GA's shop teaser; clicking the sliver opens it. -->
 <script setup lang="ts">
 const props = defineProps<{ open: boolean; peek?: string; openTo?: string; label: string }>()
@@ -23,7 +23,7 @@ function onClick() { if (!props.open && props.openTo) router.push(props.openTo) 
       data-lenis-prevent
       @click="onClick"
     >
-      <span v-if="peek" class="peek-mark display" aria-hidden="true">{{ peek }}</span>
+      <span v-if="peek" class="peek-mark label" aria-hidden="true">{{ peek }}</span>
       <button class="close label" type="button" @click.stop="close">Close</button>
       <div ref="body" class="body"><slot /></div>
     </aside>
@@ -42,7 +42,8 @@ function onClick() { if (!props.open && props.openTo) router.push(props.openTo) 
 .panel.open { transform: translateX(0); }
 .panel:not(.open) .body { overflow: hidden; }
 .peek-mark {
-  position: absolute; left: 1rem; top: var(--margin); font-size: 14rem; pointer-events: none;
+  position: absolute; left: 0; width: 4.5rem; top: 50%; transform: translateY(-50%);
+  display: flex; justify-content: center; writing-mode: vertical-rl; pointer-events: none;
   transition: opacity var(--dur-normal) var(--ease-alpha);
 }
 .panel.open .peek-mark { opacity: 0; }
@@ -57,7 +58,9 @@ function onClick() { if (!props.open && props.openTo) router.push(props.openTo) 
 @media (max-width: 767px) {
   .panel { width: 100vw; }
   .panel.peek:not(.open) { transform: translateX(calc(100% - 3rem)); }
+  .peek-mark { width: 3rem; }
+  .close { top: 6rem; }
   .peek-hit { width: 3rem; }
-  .body { padding-left: 4.5rem; }
+  .body { padding-left: 4.5rem; padding-top: 6rem; }
 }
 </style>

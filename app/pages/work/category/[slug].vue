@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { categories } from '~/data/site'
+const { categories } = useContent()
 const route = useRoute()
 const cat = categories.find((c) => c.slug === route.params.slug)
 if (!cat) throw createError({ statusCode: 404, statusMessage: 'Category not found', fatal: true })
