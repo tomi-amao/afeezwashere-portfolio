@@ -45,6 +45,7 @@ The dataset must be **public** (the default), so the site can read published con
 - `studio/` is the Studio (its own `package.json`). `npm run build` builds it into `public/studio` via `scripts/build-studio.mjs`, skipping it when `SANITY_PROJECT_ID` is unset. `server/routes/studio` serves its `index.html` for deep links.
 - `server/api/content.get.ts` fetches everything in one GROQ query (`server/utils/sanity.ts`), maps it onto the shapes in `app/data/site.ts` and caches it for 60 seconds. If Sanity can't be reached it serves the fallback content.
 - `app/plugins/content.ts` loads that once per page load; components read it with `useContent()`.
+- `cd studio && npx sanity login && SANITY_STUDIO_PROJECT_ID=<id> npm run seed` imports the placeholder categories, projects (with images) and settings from `app/data/site.ts` into Sanity. It skips anything that already exists, so it's safe to re-run.
 - Run the Studio locally with `SANITY_STUDIO_PROJECT_ID=<id> npm run studio` (http://localhost:3333/studio). Add `http://localhost:3333` as a CORS origin first.
 
 ## Fonts
