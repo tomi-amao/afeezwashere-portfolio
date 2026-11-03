@@ -16,7 +16,9 @@ export const category = defineType({
       type: 'slug',
       options: {source: 'title'},
       description: 'Click "Generate". The category lives at /work/category/<this>.',
-      validation: (r) => r.required(),
+      validation: (r) =>
+        r.required().custom((v?: {current?: string}) =>
+          !v?.current || /^[a-z0-9]+(-[a-z0-9]+)*$/.test(v.current) || 'Use lowercase letters, numbers and dashes only, with no slashes (click Generate)'),
     }),
     orderRankField({type: 'category'}),
   ],

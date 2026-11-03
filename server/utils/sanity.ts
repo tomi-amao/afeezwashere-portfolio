@@ -44,6 +44,8 @@ export interface SanityResult {
 }
 
 const SHAPES: Record<string, number> = { '16:9': 9 / 16, '9:16': 16 / 9, '4:5': 5 / 4, '1:1': 1 }
+// Tolerate slugs typed as "/photography" or "film/" in the Studio
+const clean = (slug: string) => slug.trim().replace(/^\/+|\/+$/g, '')
 const paragraphs = (t?: string) => (t ?? '').split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean)
 const filled = <T>(v: T | null | undefined, fallback: T): T =>
   v == null || v === '' || (Array.isArray(v) && v.length === 0) ? fallback : v
@@ -104,14 +106,14 @@ export function mapContent(res: SanityResult, projectId: string, dataset: string
   const projects: Project[] = res.projects.map((p) => {
     const cover = toMedia(p.cover, `${p.title}, cover still`)!
     return {
-      slug: p.slug,
+      slug: clean(p.slug),
       title: p.title,
       client: p.client || p.title,
       year: p.year || '—',
       role: p.role || 'Director',
       location: p.location || 'London',
       featured: !!p.featured,
-      categories: (p.categories ?? []).filter((c): c is string => !!c),
+      categories: (p.categories ?? []).filter((c): c is string => !!c).map(clean),
       cover,
       stills: (p.media ?? []).map((m) => toMedia(m, m._type === 'clip' ? `${p.title}, clip` : `${p.title}, still`)).filter((m): m is Media => !!m),
       loop: p.loop || undefined,
@@ -123,5 +125,5 @@ export function mapContent(res: SanityResult, projectId: string, dataset: string
 
   // Until the first project is published, keep showing the placeholder work
   if (!projects.length) return { ...fb, site, source: 'fallback' }
-  return { site, categories: res.categories, projects, source: 'sanity' }
+  return { site, categories: res.categories.map((c) => ({ ...c, slug: clean(c.slug) })), projects, source: 'sanity' }
 }

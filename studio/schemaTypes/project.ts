@@ -62,7 +62,9 @@ export const project = defineType({
       group: 'details',
       options: {source: 'title'},
       description: 'Click "Generate". The project lives at /work/<this>. Avoid changing it once shared.',
-      validation: (r) => r.required(),
+      validation: (r) =>
+        r.required().custom((v?: {current?: string}) =>
+          !v?.current || /^[a-z0-9]+(-[a-z0-9]+)*$/.test(v.current) || 'Use lowercase letters, numbers and dashes only, with no slashes (click Generate)'),
     }),
     defineField({name: 'client', title: 'Client', type: 'string', group: 'details'}),
     defineField({name: 'year', title: 'Year', type: 'string', group: 'details'}),
