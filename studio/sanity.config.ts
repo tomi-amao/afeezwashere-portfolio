@@ -16,8 +16,6 @@ export default defineConfig({
   title: 'Afeez Was Here',
   projectId,
   dataset,
-  // The Studio is served by the site itself at /studio
-  basePath: '/studio',
   plugins: [
     structureTool({
       title: 'Content',
