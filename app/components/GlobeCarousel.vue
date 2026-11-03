@@ -4,7 +4,6 @@
      CSS 3D transforms; depth drives opacity and stacking so the far side reads
      as the back of the globe. With "reduce motion" on, it's a static grid. -->
 <script setup lang="ts">
-import { projects } from '~/data/site'
 import type { GlobeItem } from '~/utils/globeLayout'
 
 const props = defineProps<{ items: GlobeItem[]; active: boolean }>()
@@ -28,7 +27,7 @@ let last = 0, raf = 0, loaded = 0, readySent = false, released = 0
 let reduce = false
 const still = ref(false) // reduced motion: show the static grid instead
 const touch = ref(false)
-const workCount = projects.length
+const workCount = useContent().projects.length
 
 function hover(it: GlobeItem | null, el?: EventTarget | null) {
   hovered.value = it

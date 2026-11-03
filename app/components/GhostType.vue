@@ -1,7 +1,7 @@
 <!-- One faint, slow marquee behind the globe: the tagline and nothing else,
      so the wordmark in front reads at a glance. -->
 <script setup lang="ts">
-import { site } from '~/data/site'
+const { site } = useContent()
 defineProps<{ active: boolean }>()
 const phrase = `${site.tagline[0]} ${site.tagline[1]}`
 </script>

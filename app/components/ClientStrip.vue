@@ -1,6 +1,6 @@
 <!-- Thin scrolling strip of previous clients along the bottom edge of the home page. -->
 <script setup lang="ts">
-import { site } from '~/data/site'
+const { site } = useContent()
 const line = site.previousClients.join(' · ')
 </script>
 

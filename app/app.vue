@@ -1,18 +1,22 @@
 <script setup lang="ts">
 import gsap from 'gsap'
-import { projects, site, img, altFor, PLACEHOLDER_RATIOS } from '~/data/site'
 import { globeLayout } from '~/utils/globeLayout'
 
+const { projects, site } = useContent()
 const route = useRoute()
 const router = useRouter()
 
-// Every image of every project becomes a card on the home globe
+// Every image of every project becomes a card on the home globe. Clips show
+// their poster and play on hover; clips without a poster stay off the globe.
 const globeItems = globeLayout(projects.flatMap((p) =>
-  [p.cover, ...p.stills].map((n) => ({
-    id: `${p.slug}-${n}`, slug: p.slug, title: p.title, year: p.year,
-    src: img(n), ratio: PLACEHOLDER_RATIOS[n]!, alt: altFor(p, n),
-    loop: n === p.cover ? p.loop : undefined,
-  })),
+  [p.cover, ...p.stills]
+    .map((m, i) => ({ m, i }))
+    .filter(({ m, i }) => m.src && (i === 0 || m.onHome))
+    .map(({ m, i }) => ({
+      id: `${p.slug}-${i}`, slug: p.slug, title: p.title, year: p.year,
+      src: m.src, ratio: m.ratio, alt: m.alt,
+      loop: i === 0 ? p.loop : m.video,
+    })),
 ))
 
 const isProject = computed(() => route.name === 'work-slug')

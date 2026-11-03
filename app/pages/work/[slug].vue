@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { projects, categories, img, altFor } from '~/data/site'
+const { projects, categories } = useContent()
 
 const route = useRoute()
 const index = projects.findIndex((p) => p.slug === route.params.slug)
@@ -18,7 +18,7 @@ const embed = computed(() => p.video?.provider === 'vimeo'
 const { $lenis } = useNuxtApp()
 const toTop = () => ($lenis ? $lenis.scrollTo(0) : scrollTo({ top: 0, behavior: 'smooth' }))
 
-useSeoMeta({ title: `${p.title} — Afeez Was Here`, description: p.body[0], ogImage: img(p.cover) })
+useSeoMeta({ title: `${p.title} — Afeez Was Here`, description: p.body[0], ogImage: p.cover.src || undefined })
 </script>
 
 <template>
@@ -26,7 +26,7 @@ useSeoMeta({ title: `${p.title} — Afeez Was Here`, description: p.body[0], ogI
     <div class="player">
       <iframe v-if="playing && embed" :src="embed" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen :title="p.title" />
       <template v-else>
-        <img :src="img(p.cover)" :alt="altFor(p, p.cover)">
+        <img :src="p.cover.src" :alt="p.cover.alt">
         <button v-if="embed" class="play label" type="button" @click="playing = true">Play film</button>
       </template>
     </div>
@@ -55,7 +55,11 @@ useSeoMeta({ title: `${p.title} — Afeez Was Here`, description: p.body[0], ogI
     </div>
 
     <div class="grid-w stills">
-      <img v-for="s in p.stills" :key="s" :src="img(s)" :alt="altFor(p, s)" loading="lazy">
+      <figure v-for="(s, i) in p.stills" :key="i">
+        <video v-if="s.kind === 'video'" :src="s.video" :poster="s.src || undefined" :aria-label="s.alt" muted loop autoplay playsinline preload="metadata" />
+        <img v-else :src="s.src" :alt="s.alt" loading="lazy">
+        <figcaption v-if="s.caption" class="mono grey">{{ s.caption }}</figcaption>
+      </figure>
     </div>
 
     <NuxtLink :to="`/work/${next.slug}`" class="next display">
@@ -95,7 +99,8 @@ useSeoMeta({ title: `${p.title} — Afeez Was Here`, description: p.body[0], ogI
 .credits { margin-top: 2rem; display: grid; gap: .6rem; }
 .credits li { display: grid; grid-template-columns: 12rem 1fr; }
 .stills { margin-top: 8rem; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; align-items: start; }
-.stills img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; }
+.stills img, .stills video { display: block; width: 100%; aspect-ratio: 4 / 5; object-fit: cover; background: #f2f2f2; }
+.stills figcaption { margin-top: .6rem; }
 .next { display: block; padding: 12rem var(--margin) 4rem; font-size: 7rem; transition: opacity var(--dur-normal) var(--ease-alpha); }
 .next:hover { opacity: .4; }
 .next .mono { display: block; margin-bottom: 1.6rem; letter-spacing: .02em; }

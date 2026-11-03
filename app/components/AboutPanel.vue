@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { site, img } from '~/data/site'
+const { site } = useContent()
 </script>
 
 <template>
@@ -9,7 +9,7 @@ import { site, img } from '~/data/site'
       <div class="bio">
         <p v-for="(p, i) in site.bio" :key="i">{{ p }}</p>
       </div>
-      <img class="portrait" :src="img(30)" alt="Portrait of Afeez Amao" loading="lazy">
+      <img class="portrait" :src="site.portrait.src" :alt="site.portrait.alt" loading="lazy">
     </div>
     <dl class="info">
       <div><dt class="mono grey">Based</dt><dd>{{ site.location }}</dd></div>

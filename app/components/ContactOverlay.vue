@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { site } from '~/data/site'
+const { site } = useContent()
 defineProps<{ open: boolean }>()
 const emit = defineEmits<{ close: [] }>()
 const copied = ref(false)
