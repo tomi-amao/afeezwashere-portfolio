@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { categories, countFor, projects, site, img, PLACEHOLDER_RATIOS, type Project } from '~/data/site'
+import type { Project } from '~/data/site'
 const props = defineProps<{ category?: string }>()
+const { categories, countFor, projects, site } = useContent()
 const pad = (n: number) => String(n).padStart(2, '0')
 // Featured projects lead and are shown larger
 const list = computed(() => (props.category ? projects.filter((p) => p.categories.includes(props.category!)) : projects)
@@ -37,8 +38,8 @@ function play(e: Event, on: boolean) {
     <ul class="grid">
       <li v-for="p in list" :key="p.slug" :class="{ featured: p.featured && !category }">
         <NuxtLink :to="`/work/${p.slug}`" class="tile" @mouseenter="play($event, true)" @mouseleave="play($event, false)">
-          <div class="thumb" :style="{ aspectRatio: p.featured && !category ? '16 / 10' : `1 / ${Math.min(PLACEHOLDER_RATIOS[p.cover]!, 1.25)}` }">
-            <img :src="img(p.cover)" :alt="`${p.title}, cover still`" loading="lazy">
+          <div class="thumb" :style="{ aspectRatio: p.featured && !category ? '16 / 10' : `1 / ${Math.min(p.cover.ratio, 1.25)}` }">
+            <img :src="p.cover.src" :alt="p.cover.alt" loading="lazy">
             <video v-if="p.loop" :src="p.loop" muted loop playsinline preload="none" aria-hidden="true" />
           </div>
           <p class="name">{{ p.title }}</p>

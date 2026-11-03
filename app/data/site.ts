@@ -1,9 +1,19 @@
-// Site content. Placeholder images live in /public/placeholders until the real
-// stills and films are added. This file is the stand-in for the Sanity CMS
-// described in the build plan: the shapes match its schemas.
-import type { CanvasSize } from '~/utils/canvasLayout'
+// Fallback site content. When Sanity is connected (SANITY_PROJECT_ID is set) the
+// site reads from it instead: see server/utils/sanity.ts. Anything Sanity leaves
+// empty falls back to the values here, so the site never renders blank.
+// Placeholder images live in /public/placeholders.
 
 export interface Category { title: string; slug: string }
+// One image or video clip. ratio is height / width.
+export interface Media {
+  kind: 'image' | 'video'
+  src: string       // image URL, or the poster image for a video ('' when it has none)
+  video?: string    // video file URL when kind is 'video'
+  ratio: number
+  alt: string
+  caption?: string
+  onHome: boolean   // shown on the home globe
+}
 export interface Credit { role: string; name: string; instagram?: string }
 export interface Project {
   slug: string
@@ -12,9 +22,8 @@ export interface Project {
   year: string
   role: string
   categories: string[]
-  cover: number          // placeholder image number
-  stills: number[]
-  canvasSizes: CanvasSize[] // one per image (cover first) on the home canvas
+  cover: Media
+  stills: Media[]       // images and clips in display order
   video?: { provider: 'vimeo' | 'youtube'; id: string }
   loop?: string          // short muted mp4 that plays on hover (globe card + Work grid)
   featured?: boolean     // shown larger in the Work grid
@@ -24,10 +33,9 @@ export interface Project {
 }
 
 export const PLACEHOLDER_RATIOS: Record<number, number> = {1: 0.428, 2: 0.428, 3: 1.250, 4: 1.250, 5: 0.562, 6: 0.562, 7: 0.562, 8: 1.250, 9: 1.000, 10: 1.000, 11: 1.250, 12: 1.250, 13: 0.428, 14: 0.562, 15: 1.250, 16: 0.666, 17: 0.428, 18: 0.666, 19: 0.666, 20: 1.250, 21: 0.562, 22: 1.250, 23: 0.562, 24: 1.250, 25: 0.562, 26: 0.562, 27: 1.250, 28: 0.666, 29: 1.250, 30: 1.500, 31: 1.500, 32: 1.000, 33: 0.428, 34: 0.562, 35: 0.562, 36: 1.000, 37: 0.428, 38: 1.250, 39: 0.666, 40: 1.250}
-// Alt text for a project image until real descriptions are written
-export const altFor = (p: Pick<Project, 'title' | 'client' | 'cover'>, n: number) =>
-  n === p.cover ? `${p.title}, cover still` : `${p.title}, still`
-export const img = (n: number) => `/placeholders/p${String(n).padStart(2, '0')}.jpg`
+const img = (n: number) => `/placeholders/p${String(n).padStart(2, '0')}.jpg`
+const placeholder = (n: number, alt: string): Media =>
+  ({ kind: 'image', src: img(n), ratio: PLACEHOLDER_RATIOS[n]!, alt, onHome: true })
 
 export const site = {
   name: 'Afeez Was Here',
@@ -41,6 +49,7 @@ export const site = {
   rep: undefined as { name: string; email: string } | undefined,
   // 30–60s showreel at the top of the Work panel when set
   showreel: undefined as { provider: 'vimeo' | 'youtube'; id: string } | undefined,
+  portrait: placeholder(30, 'Portrait of Afeez Amao'),
   socials: [
     { label: 'Instagram', href: 'https://instagram.com/' },
     { label: 'Vimeo', href: 'https://vimeo.com/' },
@@ -80,23 +89,16 @@ const seeds: Seed[] = [
   { slug: 'footlocker-x-jordan-quai-54', title: 'Footlocker × Jordan Quai 54', client: 'Footlocker', year: '—', categories: ['film'], featured: true },
 ]
 
-// A few large anchors, many small images, like the GA canvas
-const sizeCycle: CanvasSize[][] = [
-  ['xl', 's', 'xs', 'm'], ['l', 'm', 's', 'xs'], ['m', 's', 'l', 's'], ['xl', 'xs', 'm', 's'],
-  ['l', 's', 'm', 'xs'], ['m', 'l', 's', 's'], ['xl', 'm', 'xs', 's'], ['l', 's', 's', 'm'],
-  ['m', 'xs', 'l', 's'], ['xl', 's', 'm', 'xs'],
-]
-
 export const projects: Project[] = seeds.map((s, i) => ({
   ...s,
   role: 'Director',
-  cover: i * 4 + 1,
-  stills: [i * 4 + 2, i * 4 + 3, i * 4 + 4],
-  canvasSizes: sizeCycle[i]!,
+  cover: placeholder(i * 4 + 1, `${s.title}, cover still`),
+  stills: [2, 3, 4].map((k) => placeholder(i * 4 + k, `${s.title}, still`)),
   location: 'London',
   body: bodyFor(s),
   credits,
 }))
 
-export const countFor = (slug?: string) =>
-  slug ? projects.filter((p) => p.categories.includes(slug)).length : projects.length
+export type Site = typeof site
+export interface Content { site: Site; categories: Category[]; projects: Project[]; source: 'sanity' | 'fallback' }
+export const fallbackContent: Content = { site, categories, projects, source: 'fallback' }
